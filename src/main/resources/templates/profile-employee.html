@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>PalaTOS – My Profile</title>
+  <!-- Link to custom stylesheet -->
+  <link rel="stylesheet" th:href="@{/static/css/file.css}"/>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"/>
+</head>
+<body style="background-color: #f2f2f2;">
+
+<!-- Include the navbar fragment, highlighting the "profileTab" and passing the logged-in user -->
+<div th:replace="fragments/navbar :: navbar('profileTab', ${user})"></div>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <div class="card p-4 shadow-sm">
+        <!-- Page heading -->
+        <h2 class="text-center mb-4">My Profile</h2>
+
+        <!-- Display user profile fields -->
+        <p class="mb-2"><strong>Name:</strong>            <span th:text="${profile.name}"/></p>
+        <p class="mb-2"><strong>Surname:</strong>         <span th:text="${profile.surname}"/></p>
+        <p class="mb-2"><strong>Email:</strong>           <span th:text="${profile.email}"/></p>
+        <p class="mb-2"><strong>Active:</strong>          <span th:text="${profile.active}"/></p>
+        <p class="mb-2"><strong>Employee Card Code:</strong>
+          <span th:text="${profile.employeeCardCode}"/></p>
+
+        <!-- Action buttons -->
+        <div class="text-center mt-4">
+          <!-- Logout form -->
+          <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit"
+                    class="btn btn-dark"
+                    aria-label="Log out">
+              Log out
+            </button>
+          </form>
+          <!-- Disabled update button (functionality to be implemented) -->
+          <button type="button"
+                  class="btn btn-dark ml-2"
+                  aria-label="Update profile"
+                  disabled>
+            Update
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

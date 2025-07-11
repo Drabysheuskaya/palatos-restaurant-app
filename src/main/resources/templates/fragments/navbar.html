@@ -1,0 +1,89 @@
+<!-- src/main/resources/templates/fragments/navbar.html -->
+<nav th:fragment="navbar(activeTab, user)"
+     class="navbar navbar-expand"
+     style="background-color: #a2210f; border-bottom: none; box-shadow: none;">
+  <div class="container-fluid">
+
+    <!-- Brand name: bold & white -->
+    <a href="/" style="color: white; font-weight: bold; font-size: 1.5rem; text-decoration: none;">PalaTOS</a>
+
+    <ul class="navbar-nav ml-auto" style="display: flex; align-items: center; list-style: none; margin: 0; padding: 0;">
+
+      <!-- Login tab -->
+      <li class="nav-item" style="margin-left: 0.5rem;">
+        <a th:href="@{/login}"
+           class="nav-link"
+           th:style="${activeTab == 'login'} ?
+              'background-color: white; border-radius: 0.25rem; padding: 0.5rem 1rem; color: black; font-weight: normal;' :
+              (${user != null} ?
+                'padding: 0.5rem 1rem; color: black; font-weight: normal; text-decoration: none;' :
+                'padding: 0.5rem 1rem; color: gray; font-weight: normal; text-decoration: none; pointer-events: none;')">
+          Login
+        </a>
+      </li>
+
+      <!-- Menu tab -->
+      <li class="nav-item" style="margin-left: 0.5rem;">
+        <a th:if="${user != null}" th:href="@{/menu}"
+           class="nav-link"
+           th:style="${activeTab == 'menu'} ?
+             'background-color: white; border-radius: 0.25rem; padding: 0.5rem 1rem; color: black; font-weight: normal;' :
+             'padding: 0.5rem 1rem; color: black; font-weight: normal; text-decoration: none;'">
+          Menu
+        </a>
+        <a th:unless="${user != null}" href="#"
+           style="padding: 0.5rem 1rem; color: gray; font-weight: normal; text-decoration: none; pointer-events: none;">
+          Menu
+        </a>
+      </li>
+
+
+      <li class="nav-item" style="margin-left:0.5rem;"
+          th:classappend="${activeTab=='cart' or activeTab=='orders' or activeTab=='card'}
+                     ? ' bg-white rounded'
+                     : ''">
+        <!-- links as you already have them -->
+        <a th:if="${user != null and user instanceof T(com.danven.web_library.domain.user.Employee)}"
+           th:href="@{/employee/card}"
+           class="nav-link"
+           style="padding:0.5rem 1rem; color:black; text-decoration:none">
+          Cart
+        </a>
+        <a th:if="${user != null and !(user instanceof T(com.danven.web_library.domain.user.Employee))}"
+           th:href="@{/cart}"
+           class="nav-link"
+           style="padding:0.5rem 1rem; color:black; text-decoration:none">
+          Cart
+        </a>
+        <a th:if="${user == null}"
+           href="#"
+           class="nav-link"
+           style="padding:0.5rem 1rem; color:gray;pointer-events:none">
+          Cart
+        </a>
+      </li>
+
+
+      <!-- Profile tab -->
+      <!-- Profile tab -->
+      <li class="nav-item" style="margin-left: 0.5rem;">
+        <a th:if="${user != null}"
+           th:href="@{/profileTab}"
+           class="nav-link"
+           th:style="${activeTab == 'profileTab'} ?
+             'background-color: white; border-radius: 0.25rem; padding: 0.5rem 1rem; color: black; font-weight: normal;' :
+             'padding: 0.5rem 1rem; color: black; font-weight: normal; text-decoration: none;'">
+          Profile
+        </a>
+        <a th:unless="${user != null}"
+           href="#"
+           class="nav-link"
+           style="padding: 0.5rem 1rem; color: gray; font-weight: normal; text-decoration: none; pointer-events: none;">
+          Profile
+        </a>
+      </li>
+
+
+    </ul>
+  </div>
+</nav>

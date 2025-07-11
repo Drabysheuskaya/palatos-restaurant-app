@@ -1,0 +1,133 @@
+<!-- src/main/resources/templates/order/orderCard.html -->
+<div th:fragment="card(order, user, previewMap, _csrf)" class="card shadow-sm flex-fill">
+  <div class="card-body p-4">
+
+    <!-- Line items -->
+    <div th:each="po : ${order.productOrders}" class="mb-4">
+      <!-- Product row: thumbnail + name -->
+      <div class="d-flex align-items-center mb-2">
+        <div class="mr-3">
+          <!-- If a base64 preview exists for this product, show it -->
+          <img th:if="${previewMap != null
+                       and previewMap[po.product.id] != null
+                       and previewMap[po.product.id].length() > 0}"
+               th:src="|data:image/png;base64,${previewMap[po.product.id]}|"
+               class="rounded"
+               style="width:64px; height:64px; object-fit:cover;"
+               alt="Product image"/>
+
+          <!--  fallback when previewMap is missing or empty -->
+          <img th:if="${previewMap == null
+                       or previewMap[po.product.id] == null
+                       or previewMap[po.product.id].length() == 0}"
+               th:src="@{/images/no-image.png}"
+               class="rounded"
+               style="width:64px; height:64px; object-fit:cover;"
+               alt="No image"/>
+        </div>
+        <h5 class="mb-0" th:text="${po.product.productName}">Product</h5>
+      </div>
+
+      <dl class="row mb-0">
+        <dt class="col-8">Quantity:</dt>
+        <dd class="col-4 text-right" th:text="${po.amount}">1</dd>
+
+        <dt class="col-8">Unit Price:</dt>
+        <dd class="col-4 text-right"
+            th:text="|${#numbers.formatDecimal(po.productOrderPrice,1,'COMMA',2,'POINT')} PLN|">
+          0,00 PLN
+        </dd>
+
+        <dt class="col-8">Total:</dt>
+        <dd class="col-4 text-right"
+            th:text="|${#numbers.formatDecimal(po.calculateSubtotalPrice(),1,'COMMA',2,'POINT')} PLN|">
+          0,00 PLN
+        </dd>
+      </dl>
+      <hr/>
+    </div>
+
+    <!-- Totals summary -->
+    <dl class="row mb-3">
+      <dt class="col-8 font-weight-bold">Subtotal:</dt>
+      <dd class="col-4 text-right"
+          th:text="|${#numbers.formatDecimal(order.calculateTotalAmount(),1,'COMMA',2,'POINT')} PLN|">
+        0,00 PLN
+      </dd>
+
+      <dt class="col-8 font-weight-bold">Service Fee:</dt>
+      <dd class="col-4 text-right"
+          th:text="|${#numbers.formatDecimal(order.calculateServiceFee(),1,'COMMA',2,'POINT')} PLN|">
+        0,00 PLN
+      </dd>
+
+      <dt class="col-8 font-weight-bold">Total:</dt>
+      <dd class="col-4 text-right"
+          th:text="|${#numbers.formatDecimal(order.calculateFinalPrice(),1,'COMMA',2,'POINT')} PLN|">
+        0,00 PLN
+      </dd>
+    </dl>
+
+    <hr/>
+
+    <!-- Meta -->
+    <p><strong>Order ID:</strong>
+      <span th:text="${T(java.lang.String).format('ORD-%06d', order.id)}">ORD-000001</span>
+    </p>
+    <p><strong>Date:</strong>
+      <span th:text="${order.orderTime.format(
+                         T(java.time.format.DateTimeFormatter).ofPattern('MM/dd/yyyy, HH:mm:ss')
+                       )}">
+        01/01/2025, 12:00:00
+      </span>
+    </p>
+    <p><strong>Status:</strong>
+      <span th:text="${order.status}">NEW</span>
+    </p>
+
+    <!-- Actions -->
+    <div th:if="${order.status == T(com.danven.web_library.domain.order.OrderStatus).CANCELED}"
+         class="alert alert-warning text-center">
+      <form th:action="@{/orders/{id}/reactivate(id=${order.id})}" method="post" class="d-inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button class="btn btn-outline-warning btn-sm">Reactivate</button>
+      </form>
+      <form th:action="@{/orders/{id}/delete(id=${order.id})}" method="post" class="d-inline ml-2">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button class="btn btn-outline-danger btn-sm">Delete</button>
+      </form>
+    </div>
+
+    <!-- Cancel button: only enabled when status is NEW -->
+    <div class="d-flex flex-column">
+      <form th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post" class="mb-2">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button class="btn btn-danger btn-block"
+                th:disabled="${order.status != T(com.danven.web_library.domain.order.OrderStatus).NEW}">
+          Cancel
+        </button>
+      </form>
+
+      <!-- Payment buttons: show when in-progress/served and unpaid -->
+      <div th:if="${(order.status == T(com.danven.web_library.domain.order.OrderStatus).IN_PROGRESS or
+                      order.status == T(com.danven.web_library.domain.order.OrderStatus).SERVED) and
+                     order.paymentStatus == T(com.danven.web_library.domain.order.PaymentStatus).UNPAID}">
+        <form th:action="@{/orders/{id}/pay/card(id=${order.id})}" method="post" class="mb-2">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button class="btn btn-success btn-block">Pay with Card</button>
+        </form>
+        <form th:action="@{/orders/{id}/pay/cash(id=${order.id})}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button class="btn btn-info btn-block">Pay with Cash</button>
+        </form>
+      </div>
+
+      <button th:if="${order.status} == ${T(com.danven.web_library.domain.order.OrderStatus).COMPLETED}"
+              class="btn btn-outline-primary"
+              th:onclick="'location.href=\'/orders/' + ${order.id} + '/feedback\''">
+        Leave Feedback
+      </button>
+
+    </div>
+  </div>
+</div>

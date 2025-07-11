@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <!-- Ensure proper scaling on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <meta charset="UTF-8"/>
+  <!-- Page title shows product name dynamically -->
+  <title th:text="|${product.productName} - Details|">Details</title>
+  <!-- Bootstrap CSS for responsive layout and components -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"/>
+  <style>
+    /* Container for the square product preview, with border and subtle shadow */
+    .preview-container {
+      width: 100%;
+      max-width: 300px;
+      aspect-ratio: 1 / 1;
+      border: 1px solid #ddd;
+      border-radius: .25rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      background: #fff;
+    }
+    .preview-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* On small screens, shrink the preview container */
+    @media (max-width: 576px) {
+      .preview-container {
+        max-width: 90vw;
+      }
+    }
+
+
+  </style>
+</head>
+<body style="background:#f2f2f2;">
+
+<!-- navbar -->
+<div th:replace="fragments/navbar :: navbar('menu', ${user})"></div>
+
+<div class="container my-5">
+  <div class="card shadow-sm position-relative">
+    <!-- back button -->
+    <a th:href="@{/menu}"
+       class="btn btn-link text-danger position-absolute"
+       style="top:1rem; left:1rem; font-size:1rem; z-index:10;"
+       aria-label="Back to product menu"
+       role="link">
+      ← Back
+    </a>
+
+
+    <div class="row no-gutters">
+      <!-- IMAGE COLUMN -->
+      <div class="col-md-4 d-flex justify-content-center align-items-center p-4">
+        <div class="preview-container">
+          <!-- Fallback image if no preview is set -->
+          <img th:if="${#strings.isEmpty(previewImage)}"
+               th:src="@{/images/no-image.png}"
+               alt="No preview image available"
+               title="No image"/>
+
+          <!-- Display Base64 data URI if available; fallback on error -->
+          <img th:if="${previewImage.startsWith('data:image/')}"
+               th:src="${previewImage}"
+               alt="Preview of [[${product.productName}]]"
+               title="[[${product.productName}]]"
+               onerror="this.onerror=null;this.src='/images/no-image.png';"/>
+
+
+        </div>
+
+
+
+      </div>
+
+      <!-- DETAILS COLUMN -->
+      <div class="col-md-8">
+        <div class="card-body">
+          <!-- Product name -->
+          <h2 th:text="${product.productName}"
+              class="font-weight-bold mb-3">Product Name</h2>
+          <!-- Price, formatted with one integer digit and two fraction digits -->
+          <h4 th:text="|${#numbers.formatDecimal(product.price,1,'COMMA',2,'POINT')} PLN|"
+              class="text-danger mb-4">Price</h4>
+          <p th:text="${product.productDescription}" class="mb-4">Description…</p>
+
+          <!-- Basic attributes -->
+          <ul class="list-unstyled mb-4">
+            <li><strong>Calories:</strong>
+              <span th:text="${product.calorie}"/> kcal
+            </li>
+            <li><strong>Weight:</strong>
+              <span th:text="${product.weightInGrams}"/> g
+            </li>
+          </ul>
+
+          <!-- subtype-specific fields -->
+          <div th:switch="${productType}">
+            <div th:case="'Drink'">
+              <ul class="list-unstyled mb-4">
+                <li><strong>Alcohol:</strong>    <span th:text="${product.alcohol}"/>%</li>
+                <li><strong>Carbonated:</strong> <span th:text="${product.carbonated}?'Yes':'No'"/></li>
+              </ul>
+            </div>
+            <div th:case="'Food'">
+              <p class="mb-4">
+                <strong>Ingredients:</strong>
+                <span th:each="ing,stat:${product.ingredients}">
+                    <span th:text="${ing}"/>
+                    <span th:if="${!stat.last}">, </span>
+                  </span>
+              </p>
+            </div>
+            <div th:case="'Dessert'">
+              <ul class="list-unstyled mb-4">
+                <li><strong>Sugar per g:</strong> <span th:text="${product.sugarPerGram}"/></li>
+                <li><strong>Total Sugar:</strong>
+                  <span th:text="${product.sugarPerGram * product.weightInGrams}"/> g
+                </li>
+              </ul>
+            </div>
+            <div th:case="'MilkCocktail'">
+              <ul class="list-unstyled mb-4">
+                <li><strong>Alcohol:</strong>        <span th:text="${product.alcohol}"/>%</li>
+                <li><strong>Carbonated:</strong>     <span th:text="${product.carbonated}?'Yes':'No'"/></li>
+                <li><strong>Sugar per g:</strong>    <span th:text="${product.sugarPerGram}"/></li>
+                <li><strong>Total Sugar:</strong>
+                  <span th:text="${product.sugarPerGram * product.weightInGrams}"/> g
+                </li>
+                <li><strong>Ice Cream Type:</strong> <span th:text="${product.iceCreamType}"/></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- action buttons -->
+          <div class="mt-4">
+            <!-- For customers: link to add this product to cart -->
+            <a th:if="${!isEmployee}"
+               th:href="@{/cart/add/{id}(id=${product.id})}"
+               class="btn btn-dark btn-lg px-4"
+               role="button"
+               aria-label="Add product to cart">
+              Add to Cart
+            </a>
+            <!-- For employees: Edit and Remove controls -->
+            <span th:if="${isEmployee}">
+  <a th:href="@{/product/edit/{id}(id=${product.id})}"
+     class="btn btn-outline-primary mr-2"
+     role="button"
+     aria-label="Edit product details">
+    Edit
+  </a>
+  <a th:href="@{/product/delete/{id}(id=${product.id})}"
+     class="btn btn-outline-danger"
+     role="button"
+     aria-label="Remove product from store">
+    Remove
+  </a>
+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js">
+</script>
+</body>
+</html>

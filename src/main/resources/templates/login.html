@@ -1,0 +1,130 @@
+<!-- src/main/resources/templates/login.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PalaTOS - Login</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <link rel="stylesheet" th:href="@{/css/file.css}" />
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+          crossorigin="anonymous" />
+
+    <style type="text/css">
+        body {
+            background-color: #f0f0f0;
+        }
+
+        /* Centered, responsive login card with shadow */
+        .card-login {
+            max-width: 480px;
+            margin: 60px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Title styling */
+        h3.card-title {
+            font-weight: bold;
+            font-size: 1.75rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        /* Style for the register link */
+        .register-link {
+            font-weight: bold;
+            color: #000;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .register-link:hover,
+        .register-link:focus {
+            text-decoration: none;
+            color: #000;
+        }
+
+
+        /* Disabled link appearance */
+        .disabled-link {
+            color: gray;
+            pointer-events: none;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<!--
+      Navbar fragment:
+      - Highlights the 'login' tab
+      - Passes null as the user (not logged in yet)
+    -->
+<div th:replace="fragments/navbar :: navbar('login', ${null})"></div>
+
+<div class="container">
+    <div class="card-login">
+        <!-- Card header -->
+        <h3 class="card-title">Authorization</h3>
+
+        <div th:if="${msg}" class="alert alert-info">
+            <span th:text="${msg}"></span>
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text"
+                       class="form-control"
+                       th:classappend="${error} ? ' is-invalid' : ''"
+                       id="email"
+                       name="username"
+                       placeholder="Enter your email" />
+                <div class="invalid-feedback" th:if="${error}">
+                    <span th:text="${error}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password"
+                       class="form-control"
+                       th:classappend="${error} ? ' is-invalid' : ''"
+                       id="password"
+                       name="password"
+                       placeholder="Enter your password" />
+                <div class="invalid-feedback" th:if="${error}">
+                    <span th:text="${error}"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark btn-block">Log in</button>
+        </form>
+
+        <hr />
+
+        <!-- Register line with bold clickable link -->
+        <p class="text-center">
+            Don't have an account?
+            <a th:href="@{/register}" class="register-link">Register</a>
+        </p>
+
+    </div>
+</div>
+<!-- jQuery and Bootstrap JS for interactive components -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>

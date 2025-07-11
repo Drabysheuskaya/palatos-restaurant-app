@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <!-- Meta and title: dynamically shows ORD-000123 style order number -->
+  <meta charset="UTF-8"/>
+  <title th:text="'Order ' + ${'ORD-' + #strings.padLeft(order.id.toString(),6,'0')}">
+    Order Detail
+  </title>
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" th:href="@{/static/css/file.css}"/>
+  <!-- Bootstrap CSS from CDN -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+        crossorigin="anonymous"/>
+</head>
+<body style="background-color: #f2f2f2;">
+<div th:replace="fragments/navbar :: navbar('orders', ${user})"></div>
+
+<div class="container mt-5">
+  <div class="card shadow-sm p-4">
+    <h2 class="mb-4">Order Summary</h2>
+
+    <!-- Iterate over each product line in the order -->
+    <div th:each="po : ${order.productOrders}" class="mb-4">
+      <div class="row align-items-center">
+        <!-- Product image or placeholder -->
+        <div class="col-2">
+          <img th:if="${!#lists.isEmpty(po.product.images)}"
+               th:src="${po.product.images[0].base64Data}"
+               class="img-fluid rounded"
+               style="object-fit:cover; height:80px; width:80px;"
+               alt=""/>
+          <img th:if="${#lists.isEmpty(po.product.images)}"
+               src="/static/images/no-image.png"
+               class="img-fluid rounded"
+               style="object-fit:cover; height:80px; width:80px;"
+               alt="No image"/>
+        </div>
+        <div class="col-6">
+          <strong th:text="${po.product.productName}">Product Name</strong>
+        </div>
+        <div class="col-2 text-center">
+          x <span th:text="${po.amount}">1</span>
+        </div>
+        <div class="col-2 text-right">
+            <span th:text="${#numbers.formatDecimal(po.calculateSubtotalPrice(),1,'COMMA',2,'POINT')} + ' PLN'">
+              0.00 PLN
+            </span>
+        </div>
+      </div>
+      <hr/>
+    </div>
+
+    <!-- Service fee & total -->
+    <div class="row mb-2">
+      <div class="col-8"><strong>Service Fee (10%):</strong></div>
+      <div class="col-4 text-right"
+           th:text="${#numbers.formatDecimal(order.calculateServiceFee(),1,'COMMA',2,'POINT')} + ' PLN'">
+        0.00 PLN
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-8"><strong>Total:</strong></div>
+      <div class="col-4 text-right"
+           th:text="${#numbers.formatDecimal(order.calculateFinalPrice(),1,'COMMA',2,'POINT')} + ' PLN'">
+        0.00 PLN
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <p><strong>Order ID:</strong>
+      <span th:text="${'ORD-' + #strings.padLeft(order.id.toString(),6,'0')}">ORD-000001</span>
+    </p>
+    <p><strong>Date:</strong>
+      <span th:text="${#dates.format(order.orderTime,'yyyy-MM-dd HH:mm:ss')}">
+          2025-06-14 21:03:59
+        </span>
+    </p>
+    <p><strong>Status:</strong>
+      <span th:text="${order.status}">NEW</span>
+    </p>
+
+    <!-- Actions -->
+    <div th:if="${order.status.name() == 'IN_PROGRESS'}" class="mb-3">
+      <form th:action="@{/orders/{id}/pay/card(id=${order.id})}" method="post" class="mb-2">
+        <button class="btn btn-success btn-block">Pay by Card</button>
+      </form>
+      <form th:action="@{/orders/{id}/pay/cash(id=${order.id})}" method="post" class="mb-2">
+        <button class="btn btn-success btn-block">Pay in Cash</button>
+      </form>
+      <form th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
+        <button class="btn btn-danger btn-block">Cancel Order</button>
+      </form>
+    </div>
+
+    <div th:if="${order.status.name() == 'COMPLETED'}">
+      <a th:href="@{/orders/{id}/feedback(id=${order.id})}"
+         class="btn btn-secondary btn-block">
+        Leave Feedback
+      </a>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${T(java.lang.String).format('Order ORD-%06d', order.id)}">
+    Order Detail
+  </title>
+  <!-- Application-specific stylesheet -->
+  <link rel="stylesheet" th:href="@{/css/file.css}"/>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"/>
+</head>
+<body style="background:#f2f2f2;">
+
+<div th:replace="fragments/navbar :: navbar('orders', ${user})"></div>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <!-- Embed the reusable orderCard fragment to render the full order summary,
+             passing the order object, user, previewMap for images, and _csrf token -->
+      <div th:replace="order/orderCard :: card(
+                               order=${order},
+                               user=${user},
+                               previewMap=${previewMap},
+                               _csrf=${_csrf}
+                             )">
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

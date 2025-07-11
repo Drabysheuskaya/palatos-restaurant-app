@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Your Active Orders</title>
+  <!-- Include application-specific styles -->
+  <link rel="stylesheet" th:href="@{/css/file.css}"/>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"/>
+</head>
+<body>
+
+<!-- Navbar fragment: highlights the “orders” tab and passes the current user -->
+<div th:replace="fragments/navbar :: navbar('orders', ${user})"></div>
+
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Your Active Orders</h2>
+
+  <!-- Notification shown if an employee has canceled the user’s last order -->
+  <div th:if="${orderCanceledByEmployee}"
+       class="alert alert-warning text-center">
+    Your order was canceled by an employee.
+  </div>
+
+
+  <!-- Informational message when the user has no active orders -->
+  <div th:if="${#lists.isEmpty(orders)}"
+       class="alert alert-info text-center">
+    You have no active orders.
+  </div>
+
+  <!-- Scrollable container for multiple order cards -->
+  <div class="orders-scroll">
+    <div th:each="order : ${orders}" class="mb-4">
+      <div th:replace="order/orderCard :: card(
+                               order=${order},
+                               user=${user},
+                               previewMap=${previewMap},
+                               _csrf=${_csrf}
+                             )">
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

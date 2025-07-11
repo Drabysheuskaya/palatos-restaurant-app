@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>PalaTOS – Menu</title>
+    <!-- Bootstrap CSS for layout and components -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"/>
+    <style>
+        body {
+            background: #f2f2f2;
+        }
+
+        /* Scrollable panes for categories, products, images */
+       #category-list, #product-list, #image-list {
+           max-height: 80vh;
+           overflow-y: auto;
+       }
+        /* Styling for the image list container */
+       #image-list {
+           display: flex;
+           flex-direction: column;
+           gap: 1rem;
+           padding: 1rem;
+           background: #fff;
+           border: 2px solid #ddd;
+           border-radius: 0.5rem;
+           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+       }
+
+        /* Thumbnail styling */
+       .thumb {
+           cursor: zoom-in;
+           width: 100%;
+           height: 250px;
+           object-fit: contain;
+
+           border: 2px solid #ddd;
+           border-radius: 0.25rem;
+           background: #f9f9f9;
+           padding: 0.5rem;
+
+           transition: transform 0.2s ease-in-out;
+       }
+
+
+       .thumb:hover {
+           transform: scale(1.02);
+           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+       }
+        /* Button group in each product line */
+       .button-group {
+           display: flex;
+           gap: 0.5rem;
+            flex-wrap: wrap;    /* перенос кнопок на новую строку, если не помещаются */
+            justify-content: flex-end; /* выравнивание справа */
+            align-items: center; /* вертикальное выравнивание */
+        }
+
+        /* Small preview thumbnail in product list */
+        .preview-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            margin-right: .5rem;
+        }
+
+        /* “Add Product” button styling for employees */
+        .btn-add-product {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-add-product:hover {
+            background-color: #218838;
+            color: #fff;
+        }
+
+        #zoomedImageWrapper {
+            width: 90vw;
+            max-width: 500px;
+            height: 90vw;
+            max-height: 500px;
+
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 0;
+            overflow: hidden;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            margin: auto;
+        }
+
+        #zoomedImage {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Make the close button appear inside the white box */
+        #zoomedImageWrapper .close-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.85);
+            border: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            text-align: center;
+            line-height: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        #zoomedImageWrapper .close-btn:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 768px) {
+            #product-list,
+            #image-list {
+                max-height: none;
+                margin-bottom: 1rem;
+            }
+
+            .col-md-5,
+            .col-md-2 {
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+
+            .thumb {
+                max-height: 200px;
+            }
+
+            .preview-thumb {
+                width: 40px;
+                height: 40px;
+            }
+
+            .list-group-item {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .list-group-item > div:last-child {
+                margin-top: 0.5rem;
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+            }
+
+
+        }
+
+    </style>
+</head>
+
+<body>
+<!-- navbar -->
+<div th:replace="fragments/navbar :: navbar('menu', ${user})"></div>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3 align-items-center">
+        <div class="col">
+            <h3>Menu</h3>
+        </div>
+        <div class="col-auto">
+            <a th:if="${isEmployee}" th:href="@{/product/add}" class="btn btn-add-product"> + Add Product </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Category List -->
+        <nav class="col-md-2">
+            <h5>Categories</h5>
+            <div class="list-group" id="category-list">
+                <a href="#" data-cat="0" class="list-group-item list-group-item-action active"> All </a>
+                <a th:each="cat : ${categories}" href="#" th:attr="data-cat=${cat.id}" th:text="${cat.name}"
+                   class="list-group-item list-group-item-action"
+                   th:attrappend="title='Show products in category ' + ${cat.name}"> </a>
+
+            </div>
+        </nav>
+
+        <!-- Product List -->
+        <div class="col-md-5">
+            <h5>Products</h5>
+            <ul class="list-group" id="product-list"></ul>
+        </div>
+
+        <!-- Image List -->
+        <div class="col-md-5">
+            <h5>Images</h5>
+            <div id="image-list" class="border rounded p-2 bg-white">
+                <p class="text-muted">Select a product to see its images…</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inline JavaScript for loading products & images by category via fetch() -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const catPane = document.getElementById('category-list');
+    const prodPane = document.getElementById('product-list');
+    const imgPane = document.getElementById('image-list');
+    const productsUrl = /*[[@{/menu/products}]]*/ '/menu/products';
+
+    // When a category link is clicked:
+    catPane.querySelectorAll('a').forEach(a => a.addEventListener('click', evt => {
+        evt.preventDefault();
+        // Highlight active category
+        catPane.querySelectorAll('.active').forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+        const catId = a.getAttribute('data-cat');
+
+        // Fetch products in selected category
+        fetch(`${productsUrl}?categoryId=${catId}`)
+            .then(r => r.json())
+            .then(products => {
+                prodPane.innerHTML = '';
+                imgPane.innerHTML = `<p class="text-muted">Select a product…</p>`;
+
+                if (products.length === 0) {
+                    prodPane.innerHTML = `<li class="list-group-item">No products</li>`;
+                    return;
+                }
+
+                products.forEach(p => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex align-items-center justify-content-between';
+
+                    // choose preview image or fallback
+                    const previewImg = p.images.find(i => i.preview) || p.images[0];
+
+                    const thumbHtml = previewImg
+                        ? `<img src="data:image/${previewImg.format.toLowerCase()};base64,${previewImg.base64Data}"
+              class="preview-thumb"
+              alt="Preview of ${p.productName}"
+              title="Preview of ${p.productName}"/>`
+                        : `<div class="preview-thumb bg-secondary" title="No preview image available"></div>`;
+
+                    const categoryNames = p.categories && p.categories.length
+                        ? p.categories.map(c => c.name).join(', ')
+                        : 'No categories';
+
+                    li.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            ${thumbHtml}
+                            <div>
+                                <strong>${p.productName}</strong><br/>
+                                <small class="text-muted">${p.price.toFixed(2).replace('.', ',')} PLN</small><br/>
+                                <small class="text-muted">${categoryNames}</small>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                       <button class="btn btn-sm btn-outline-primary" title="Show all product images">Show Photos</button>
+                       <a href="/menu/details/${p.id}" class="btn btn-sm btn-primary" title="View full product details">Details</a>
+
+                      </div>
+
+                    `;
+
+                    li.querySelector('button').addEventListener('click', () => {
+                        imgPane.innerHTML = '';
+                        if (!p.images || p.images.length === 0) {
+                            imgPane.innerHTML = `<p class="text-muted">No images</p>`;
+                            return;
+                        }
+
+                        p.images.forEach(img => {
+                            const el = document.createElement('img');
+                            el.src = `data:image/${img.format.toLowerCase()};base64,${img.base64Data}`;
+                            el.className = 'thumb';
+                            imgPane.appendChild(el);
+                        });
+                    });
+
+                    prodPane.appendChild(li);
+                });
+            });
+    }));
+
+    catPane.querySelector('[data-cat="0"]').click();
+
+    /*]]>*/
+</script>
+
+<!-- Image Zoom Modal -->
+<div class="modal fade" id="imageZoomModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-transparent border-0 shadow-none">
+            <div class="modal-body d-flex justify-content-center align-items-center p-0">
+                <div id="zoomedImageWrapper">
+                    <button class="close-btn" data-dismiss="modal" aria-label="Close">&times;</button>
+                    <img id="zoomedImage" src="" alt="Zoomed product image" title="Zoomed product image" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Popper.js (нужен для Bootstrap 4 модалок и всплывашек) -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js"></script>
+
+<script th:inline="javascript">
+    $(document).ready(function () {
+        // Клик на картинку — открыть модалку
+        $(document).on('click', '.thumb', function () {
+            const src = $(this).attr('src');
+            $('#zoomedImage').attr('src', src);
+            $('#imageZoomModal').modal('show');
+        });
+
+        // Trap focus/inert outside modal while open
+        $('#imageZoomModal').on('shown.bs.modal', function () {
+            $('body > *:not(.modal-backdrop):not(#imageZoomModal)').attr('inert', 'true');
+        });
+
+        // При скрытии модалки — убираем inert с остальных элементов
+        $('#imageZoomModal').on('hidden.bs.modal', function () {
+            $('[inert]').removeAttr('inert');
+            // Очищаем src увеличенного изображения
+            $('#zoomedImage').attr('src', '');
+        });
+
+        // Click outside to close
+        $(document).on('click', function (e) {
+            const $modal = $('#imageZoomModal');
+            if ($modal.hasClass('show') && $(e.target).closest('.modal-content').length === 0) {
+                $modal.modal('hide');
+            }
+        });
+
+    });
+</script>
+
+
+</body>
+</html>
